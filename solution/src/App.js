@@ -44,7 +44,7 @@ function App() {
   return (
     <>
       <header className="App-header">
-        <h1>React-interview-q1 solution</h1>
+        <h1>react-interview-q1 solution</h1>
       </header>
       <div className="App">
         <form>
