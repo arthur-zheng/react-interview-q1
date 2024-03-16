@@ -1,41 +1,45 @@
-import { React, useState, useEffect } from "react";
-import { getLocations, isNameValid, postData } from "./mock-api/apis";
+import { React, useState } from "react";
+import { postData } from "./mock-api/apis";
+import SimpleTable from "./components/SimpleTable";
+import SimpleSelect from "./components/SimpleSelect";
+import SimpleNameInput from "./components/SimpleNameInput";
 import "./App.css";
 
 function App() {
   const [formData, setFormData] = useState({ name: "", location: "" });
-  const [formError, setFormError] = useState({
-    name: "name taken",
-    location: "location not valid",
+  const [errors, setErrors] = useState({
+    name: "",
+    location: "",
   });
-  const [options, setOptions] = useState(["loading"]);
-  const [tableData, setTableData] = useState([
-    ["tom", "atlanta"],
-    ["jerry", "chicago"],
-  ]);
+  const [tableData, setTableData] = useState([]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // TODO: validate the input
-    // TODO: check if the name is valid
+    // To handle the case when user submits an empty form without clicking input/select
+    const isNameEmpty = formData.name === "";
+    const isLocationEmpty = formData.location === "";
+    const newErrors = {
+      ...errors,
+      name: isNameEmpty ? "Please type in a name" : errors.name,
+      location: isLocationEmpty ? "Please select a location" : errors.location,
+    };
+    setErrors(newErrors);
+    // Only proceed if there are no errors
+    if (
+      !isNameEmpty &&
+      !isLocationEmpty &&
+      !newErrors.name &&
+      !newErrors.location
+    ) {
+      clearForm();
+      postData(formData, setTableData);
+    }
   };
 
-  // useEffect(() => {
-  //   getLocations().then((locations) => {
-  //     formData[1]({ ...formData[0], location: locations[0] });
-  //   });
-  // }, []);
-
-  const locationOptions = options.map((location) => (
-    <option value="Canada">{location}</option>
-  ));
-
-  const tableContent = tableData.map(([name, location]) => (
-    <tr>
-      <td>{name}</td>
-      <td>{location}</td>
-    </tr>
-  ));
+  const clearForm = () => {
+    setFormData({ name: "", location: "" });
+    setErrors({ name: "", location: "" });
+  };
 
   return (
     <>
@@ -44,41 +48,31 @@ function App() {
       </header>
       <div className="App">
         <form>
-          <div className="form-row">
-            <label htmlFor="name" className="form-label">
-              Name
-            </label>
-            <input name="name" value={formData.name} type="text" />
-          </div>
-          {formError.name && <p className="error-message">{formError.name}</p>}
-          <div className="form-row">
-            <label htmlFor="location" className="form-label">
-              Location
-            </label>
-            <select name="location" value={formData.name}>
-              {locationOptions}
-            </select>
-          </div>
-          {formError.location && (
-            <p className="error-message">{formError.location}</p>
-          )}
+          <SimpleNameInput
+            handleChange={(value) => setFormData({ ...formData, name: value })}
+            value={formData.name}
+            setErrors={setErrors}
+            errorMessage={errors.name}
+          />
+          <SimpleSelect
+            location={formData.location}
+            handleChange={(value) =>
+              setFormData({ ...formData, location: value })
+            }
+            setErrors={setErrors}
+            errorMessage={errors.location}
+          />
           <div className="form-row controls">
-            <button type="">Clear</button>
+            <button type="button" onClick={clearForm}>
+              Clear
+            </button>
             <button type="submit" onClick={handleSubmit}>
               Add
             </button>
           </div>
         </form>
       </div>
-      <table className="result-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Location</th>
-          </tr>
-        </thead>
-        <tbody>{tableContent}</tbody>
-      </table>
+      <SimpleTable tableData={tableData} />
     </>
   );
 }

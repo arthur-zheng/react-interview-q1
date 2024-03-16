@@ -14,10 +14,13 @@ export const isNameValid = (name) =>
 export const getLocations = () =>
   Promise.resolve(["Canada", "China", "USA", "Brazil"]);
 
-export const postData = (formData, setFormData) =>
+export const postData = (inputData, setFormData) =>
   new Promise((resolve) => {
     setTimeout(() => {
-      setFormData((existingFormData) => [...existingFormData, ...formData]);
+      setFormData((existingFormData) => [
+        ...existingFormData,
+        [inputData.name, inputData.location],
+      ]);
       resolve();
-    }, Math.random() * 2000);
+    }, Math.random() * 1000);
   });
